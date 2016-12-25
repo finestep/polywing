@@ -216,7 +216,7 @@ public class DeformCollider : MonoBehaviour
                 }
                 unvisited.UnionWith(entry);
 
-                int subdivCount = Mathf.RoundToInt(Math.Max(1, c.rad * 1.5f) );
+                int subdivCount = Mathf.RoundToInt(Math.Max(1, c.rad * 3.1f) );
 
                 while (unvisited.Count > 0)
                 {
@@ -252,13 +252,15 @@ public class DeformCollider : MonoBehaviour
 
                             float startAng = Mathf.PI + Mathf.Atan2(firstInt.pos.y - c.pos.y, firstInt.pos.x - c.pos.x);
                             float endAng = Mathf.PI + Mathf.Atan2(v.pos.y - c.pos.y, v.pos.x - c.pos.x);
-                            if (endAng < startAng) endAng += Mathf.PI * 2;
+
+
+                            if (endAng < startAng) startAng -= Mathf.PI * 2;
 
                             float step = (endAng - startAng) / (subdivCount+1);
-                            Vector2 rotV = Vector2.zero;
-                            for (float phi = startAng+step; phi <= endAng-step; phi += step )
-                            {
 
+                            Vector2 rotV = Vector2.zero;
+                            for (float phi = startAng+step; phi <endAng; phi += step )
+							{
                                 rotV.x = Mathf.Cos(phi);
                                 rotV.y = Mathf.Sin(phi);
                                 newVerts[currComponent].Add(c.pos - rotV * c.rad);
