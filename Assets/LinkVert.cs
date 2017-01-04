@@ -3,10 +3,8 @@
 namespace PolyUtil
 {
 
-
-
-
-    class LinkVert
+    
+public class LinkVert
     {
         public LinkVert prev;
         public LinkVert next;

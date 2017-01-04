@@ -9,29 +9,45 @@ public class TerrainData : MonoBehaviour {
 		public List<Vector2> verts;
 		public LinkVert head;
 		public int size { get; private set; }
-		int textureID { get; private set; }
-		float hardness { get; private set; }
-		public PolyPath() {
+		public int textureID { get; private set; }
+        public float hardness { get; private set; } // direct multiplier on explosion radius
+
+
+		public PolyPath(Vector2[] path,int texID = 0, float hard = 1) {
+
+            verts = new List<Vector2>();
+            head = null;
+
+            textureID = texID;
+            hardness = hard;
+
+            if (path.Length >= 3)
+            {
+                LinkVert v = null, prev = null;
+                
+                for (int i = 0; i < verts.Count; i++)
+                {
+                    verts.Add(path[i]);
+
+                    v = new LinkVert(path[i], i, prev, null);
+
+                    if (prev != null)
+                        prev.next = v;
+                    else
+                        head = v;
+
+                    prev = v;
+                }
+                head.prev = v;
+                v.next = head;
+                size = path.Length;
+            } else
+            {
+                size = 0;
+            }
+
 		}
-		public PolyPath(Vector2[] path) {
-			
-			LinkVert v,prev = null;
-			for( int i = 0; i < verts.Count; i++) {
-				verts.Add(path[i]);
 
-				v = new LinkVert(path[i], i, prev, null);
-
-				if(prev != null)
-					prev.next = v;
-				else
-					head = v;
-
-				prev = v;
-			}
-			head.prev = v;
-			v.next = head;
-
-		}
 		public void addVert(LinkVert v) {
 			LinkVert.InsertVert(head,head.prev,v);
 			verts.Add(v.pos);
@@ -65,11 +81,27 @@ public class TerrainData : MonoBehaviour {
 
 			PolygonCollider2D pc = GetComponent<PolygonCollider2D> ();
 
+            if (!pc)
+            {
+                Debug.LogError("No collider to initialize TerrainData from");
+                return;
+            }
+
 			polyPaths = new PolyPath[pc.pathCount];
 
-			for (int pathI = 0; pathI < pc.pathCount; pathI++) {
-				PolyPath pp = new PolyPath (pc.GetPath (pathI));
+            bool initialArraysValid = initialHard != null && initialMats != null &&
+                initialMats.Length == pc.pathCount && initialHard.Length == pc.pathCount;
 
+            if (!initialArraysValid) Debug.LogWarning("initial TerrainData array size mismatch");
+
+            PolyPath pp;
+
+            for (int pathI = 0; pathI < pc.pathCount; pathI++) {
+                if (initialArraysValid)
+                    pp = new PolyPath(pc.GetPath(pathI), initialMats[pathI], initialHard[pathI]);
+                else
+                    pp = new PolyPath(pc.GetPath(pathI));
+                polyPaths[pathI] = pp;
 			}
 		} else {
 			polyPaths = null;
