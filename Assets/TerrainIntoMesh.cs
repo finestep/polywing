@@ -5,13 +5,13 @@ using System;
 using PolyUtil;
 
 [ExecuteInEditMode]
-[RequireComponent(typeof(PolygonCollider2D),typeof(MeshFilter) )]
-public class ColliderIntoMesh : MonoBehaviour {
+[RequireComponent(typeof(TerrainData),typeof(MeshFilter) )]
+public class TerrainIntoMesh : MonoBehaviour {
 
     MeshFilter mf;
-    PolygonCollider2D pc;
+    TerrainData td;
 
-    public List<int> triangles;
+    public List<int>[] triangles;
     List<Vector3> verts;
     Color[] colors;
     LinkVert[] poly;
@@ -21,14 +21,14 @@ public class ColliderIntoMesh : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         
-        pc = GetComponent<PolygonCollider2D>();
+        td = GetComponent<TerrainData>();
         mf = GetComponent<MeshFilter>();
         if(!mf)
             mf = gameObject.AddComponent<MeshFilter>();
         mf.sharedMesh = new Mesh();
         mf.sharedMesh.Clear();
 
-        triangles = new List<int>();
+        triangles = new List<int>[GetComponent<MeshRenderer>().sharedMaterials.Length];
         verts = new List<Vector3>();
 
         colors = new Color[0];
@@ -52,28 +52,37 @@ public class ColliderIntoMesh : MonoBehaviour {
     private void UpdateMesh()
     {
         verts.Clear();
-        triangles.Clear();
+
+        Array.ForEach(triangles, x=>x.Clear() );
+
         mf.sharedMesh.Clear();
-        for (int pathIndex = 0;pathIndex<pc.pathCount;pathIndex++)
+
+
+        for (int pathIndex = 0; pathIndex<td.polyPathCount;pathIndex++)
         {
-            Vector2[] path = pc.GetPath(pathIndex);
+            int pathLength = td.polyPaths[pathIndex].size;
+            Vector2[] path = td.polyPaths[pathIndex].verts.ToArray();
+
+            int matIndex = td.polyPaths[pathIndex].textureID;
+
             int vertStart = verts.Count;
 
-            if(path.Length < 3)
+            if(pathLength < 3)
             {
-                Debug.LogError(gameObject + " has an invalid collision mesh!");
+                Debug.LogError(gameObject + " has a degenerate path");
                 this.enabled = false;
                 return;
-            }  else if(path.Length < 4)
+            }  else if(pathLength < 4)
             {
+                
 
                 for (int vertI = 0; vertI < path.Length; vertI++)
                      verts.Add(path[vertI]);
 
 
-                triangles.Add(vertStart);
-                triangles.Add(vertStart+1);
-                triangles.Add(vertStart+2);
+                triangles[matIndex].Add(vertStart);
+                triangles[matIndex].Add(vertStart+1);
+                triangles[matIndex].Add(vertStart+2);
 
                 Array.Resize(ref colors, verts.Count);
 
@@ -83,10 +92,10 @@ public class ColliderIntoMesh : MonoBehaviour {
 
             } else
             {
-                Array.Resize(ref poly, path.Length);
+                Array.Resize(ref poly, pathLength);
                 LinkVert prev = null;
                 LinkVert v = null;
-                for (int vertI = 0; vertI < path.Length; vertI++)
+                for (int vertI = 0; vertI < pathLength; vertI++)
                 {
 
                     verts.Add(path[vertI]);
@@ -118,19 +127,19 @@ public class ColliderIntoMesh : MonoBehaviour {
                 while (remaining > 3 && loop >= 0)
                 {
                     loop--;
-                    if (!isReflex(currVert) && isEar(currVert)  )
+                    if (!isReflex(currVert) && isEar(currVert))
                     {
 
-                        triangles.Add(currVert.index);
-                        triangles.Add(currVert.next.index);
-                        triangles.Add(currVert.prev.index);
+                        triangles[matIndex].Add(currVert.index);
+                        triangles[matIndex].Add(currVert.next.index);
+                        triangles[matIndex].Add(currVert.prev.index);
 
-                        col = Color.Lerp(Color.red,Color.blue,(float)(remaining-3)/(float)(startLen));
+                        //col = Color.Lerp(Color.red,Color.blue,(float)(remaining-3)/(float)(startLen));
 
 
-                        colors[currVert.index] = col;
-                        colors[currVert.next.index] = col;
-                        colors[currVert.prev.index] = col;
+                        //colors[currVert.index] = col;
+                        //colors[currVert.next.index] = col;
+                        //colors[currVert.prev.index] = col;
 
                         
 
@@ -168,16 +177,16 @@ public class ColliderIntoMesh : MonoBehaviour {
 
                     for (int i = 0; i < 3; i++)
                     {
-                        triangles.Add(currVert.index);
+                        triangles[matIndex].Add(currVert.index);
 
                         //if (isReflex(currVert))
                         //    col = Color.black;
                         //else
-                            col = Color.green;
+                            //col = Color.green;
 
                     
 
-                        colors[currVert.index] = col;
+                        //colors[currVert.index] = col;
 
                         currVert = currVert.next;
 
@@ -188,10 +197,9 @@ public class ColliderIntoMesh : MonoBehaviour {
 
         }
         mf.sharedMesh.SetVertices(verts);
-        mf.sharedMesh.SetTriangles(triangles,0);
-        mf.sharedMesh.SetColors(new List<Color>(colors));
-
-        
+        for(int triI=0;triI < triangles.Length; triI++)
+            mf.sharedMesh.SetTriangles(triangles[triI],triI);
+        //mf.sharedMesh.SetColors(new List<Color>(colors));
         
 
         Array.Clear(poly, 0, poly.Length);
