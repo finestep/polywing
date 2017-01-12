@@ -25,7 +25,7 @@ public class TerrainData : MonoBehaviour {
             {
                 LinkVert v = null, prev = null;
                 
-                for (int i = 0; i < verts.Count; i++)
+                for (int i = 0; i < path.Length; i++)
                 {
                     verts.Add(path[i]);
 
@@ -103,6 +103,7 @@ public class TerrainData : MonoBehaviour {
                     pp = new PolyPath(pc.GetPath(pathI));
                 polyPaths[pathI] = pp;
 			}
+            polyPathCount = pc.pathCount;
 		} else {
 			polyPaths = null;
 			polyPathCount = 0;

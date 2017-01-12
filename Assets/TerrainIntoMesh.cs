@@ -29,6 +29,8 @@ public class TerrainIntoMesh : MonoBehaviour {
         mf.sharedMesh.Clear();
 
         triangles = new List<int>[GetComponent<MeshRenderer>().sharedMaterials.Length];
+        for (int i = 0; i < triangles.Length; i++)
+            triangles[i] = new List<int>();
         verts = new List<Vector3>();
 
         colors = new Color[0];
@@ -57,6 +59,8 @@ public class TerrainIntoMesh : MonoBehaviour {
 
         mf.sharedMesh.Clear();
 
+        
+
 
         for (int pathIndex = 0; pathIndex<td.polyPathCount;pathIndex++)
         {
@@ -66,6 +70,8 @@ public class TerrainIntoMesh : MonoBehaviour {
             int matIndex = td.polyPaths[pathIndex].textureID;
 
             int vertStart = verts.Count;
+
+            Color col = Color.white;
 
             if(pathLength < 3)
             {
@@ -86,9 +92,9 @@ public class TerrainIntoMesh : MonoBehaviour {
 
                 Array.Resize(ref colors, verts.Count);
 
-                colors[vertStart] = Color.red;
-                colors[vertStart + 1] = Color.green;
-                colors[vertStart + 2] = Color.blue;
+                colors[vertStart] = col;
+                colors[vertStart + 1] = col;
+                colors[vertStart + 2] = col;
 
             } else
             {
@@ -121,7 +127,6 @@ public class TerrainIntoMesh : MonoBehaviour {
 
                 Array.Resize(ref colors, verts.Count);
                 LinkVert toRem = null;
-                Color col;
                 int loop = remaining+4;
                 //print("begin clipping");
                 while (remaining > 3 && loop >= 0)
@@ -137,9 +142,9 @@ public class TerrainIntoMesh : MonoBehaviour {
                         //col = Color.Lerp(Color.red,Color.blue,(float)(remaining-3)/(float)(startLen));
 
 
-                        //colors[currVert.index] = col;
-                        //colors[currVert.next.index] = col;
-                        //colors[currVert.prev.index] = col;
+                        colors[currVert.index] = col;
+                        colors[currVert.next.index] = col;
+                        colors[currVert.prev.index] = col;
 
                         
 
@@ -154,9 +159,9 @@ public class TerrainIntoMesh : MonoBehaviour {
                         remaining -= 1;
                     } else
                     {
-                        colors[currVert.index] = Color.black;
-                        colors[currVert.next.index] = Color.black;
-                        colors[currVert.prev.index] = Color.black;
+                        colors[currVert.index] = col;
+                        colors[currVert.next.index] = col;
+                        colors[currVert.prev.index] = col;
 
                         currVert = currVert.next;
                     }
@@ -186,7 +191,7 @@ public class TerrainIntoMesh : MonoBehaviour {
 
                     
 
-                        //colors[currVert.index] = col;
+                        colors[currVert.index] = col;
 
                         currVert = currVert.next;
 
@@ -194,12 +199,11 @@ public class TerrainIntoMesh : MonoBehaviour {
 
             }
 
-
         }
         mf.sharedMesh.SetVertices(verts);
         for(int triI=0;triI < triangles.Length; triI++)
             mf.sharedMesh.SetTriangles(triangles[triI],triI);
-        //mf.sharedMesh.SetColors(new List<Color>(colors));
+        mf.sharedMesh.SetColors(new List<Color>(colors));
         
 
         Array.Clear(poly, 0, poly.Length);

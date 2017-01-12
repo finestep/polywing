@@ -5,7 +5,7 @@ using System;
 using PolyUtil;
 
 [RequireComponent(typeof(PolygonCollider2D))]
-public class DeformCollider : MonoBehaviour
+public class DeformTerrain : MonoBehaviour
 {
 
     public struct Circle

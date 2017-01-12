@@ -23,7 +23,7 @@ public class ExplodeOnMouse : MonoBehaviour {
             Destroy(e, e.GetComponent<ParticleSystem>().duration);
 
             if (terrain)
-                terrain.GetComponent<DeformCollider>().Deform( new DeformCollider.Circle(mousePos, radius) );
+                terrain.GetComponent<DeformTerrain>().Deform( new DeformTerrain.Circle(mousePos, radius) );
 
         }
 	}

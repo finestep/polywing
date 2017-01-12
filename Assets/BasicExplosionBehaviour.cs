@@ -17,7 +17,7 @@ public class BasicExplosionBehaviour : MonoBehaviour {
 
         transform.localScale = new Vector3(radius, radius, radius);
 
-        FindObjectOfType<DeformCollider>().Deform(new DeformCollider.Circle(transform.position, radius));
+        FindObjectOfType<DeformTerrain>().Deform(new DeformTerrain.Circle(transform.position, radius));
 
 
         GetComponentInChildren<ParticleSystem>().Play();

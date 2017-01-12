@@ -68,8 +68,7 @@
     <Compile Include="Assets\BasicGizmo.cs" />
     <Compile Include="Assets\BasicProjectile.cs" />
     <Compile Include="Assets\CircleTest.cs" />
-    <Compile Include="Assets\ColliderIntoMesh.cs" />
-    <Compile Include="Assets\DeformCollider.cs" />
+    <Compile Include="Assets\DeformTerrain.cs" />
     <Compile Include="Assets\DumbfireBehaviour.cs" />
     <Compile Include="Assets\ExplodeOnMouse.cs" />
     <Compile Include="Assets\LinkVert.cs" />
@@ -78,7 +77,12 @@
     <Compile Include="Assets\ShipControls.cs" />
     <Compile Include="Assets\ShipHealth.cs" />
     <Compile Include="Assets\StayInBounds.cs" />
+    <Compile Include="Assets\TerrainData.cs" />
+    <Compile Include="Assets\TerrainIntoMesh.cs" />
     <Compile Include="Assets\Weapon.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\TerrainWorldSpace.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
