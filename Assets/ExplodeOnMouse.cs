@@ -20,7 +20,7 @@ public class ExplodeOnMouse : MonoBehaviour {
             e.transform.position = mousePos;
             e.transform.localScale = new Vector3(radius, radius, radius);
             e.GetComponent<ParticleSystem>().Play();
-            Destroy(e, e.GetComponent<ParticleSystem>().duration);
+            Destroy(e, e.GetComponent<ParticleSystem>().main.duration);
 
             if (terrain)
                 terrain.GetComponent<DeformTerrain>().Deform( new DeformTerrain.Circle(mousePos, radius) );

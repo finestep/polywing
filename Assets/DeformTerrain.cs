@@ -4,7 +4,7 @@ using System.Linq;
 using System;
 using PolyUtil;
 
-[RequireComponent(typeof(PolygonCollider2D))]
+[RequireComponent(typeof(TerrainData))]
 public class DeformTerrain : MonoBehaviour
 {
 
@@ -27,12 +27,12 @@ public class DeformTerrain : MonoBehaviour
     }
 
 
-    PolygonCollider2D pc;
+    TerrainData td;
 
     // Use this for initialization
     void Start()
     {
-        pc = GetComponent<PolygonCollider2D>();
+        td = GetComponent<TerrainData>();
     }
 
     // Update is called once per frame
@@ -50,18 +50,19 @@ public class DeformTerrain : MonoBehaviour
         List<LinkVert> intersections = new List<LinkVert>();
         HashSet<LinkVert> unvisited = new HashSet<LinkVert>();
 
-        List<Vector2>[] newVerts = new List<Vector2>[0];
+        LinkVert[] newVerts = new LinkVert[0];
         int currComponent = 0;
 
-        LinkVert[] polyHead = new LinkVert[pc.pathCount];
-        LinkVert[] interHead = new LinkVert[pc.pathCount];
 
-        bool[] modified = new bool[pc.pathCount];
-        bool[] toRemove = new bool[pc.pathCount];
+        LinkVert[] interHead = new LinkVert[td.polyPathCount];
 
-        for (int pathI = 0; pathI < pc.pathCount; pathI++)
+        List<TerrainData.PolyPath> newPaths = new List<TerrainData.PolyPath>();
+
+        var rad = c.rad;
+
+        for (int pathI = 0; pathI < td.polyPathCount; pathI++)
         {
-            Vector2[] path = pc.GetPath(pathI);
+            Vector2[] path = td.polyPaths[pathI].verts.ToArray();
 
             intersections.Clear();
             unvisited.Clear();
@@ -72,32 +73,19 @@ public class DeformTerrain : MonoBehaviour
 
             int contains = 0;
 
+            vert = td.polyPaths[pathI].head;
 
-            for (int vertI = 0; vertI < path.Length; vertI++)
-            {
 
-                vert = new LinkVert(path[vertI], vertI, prev, null);
 
-                if (prev != null)
-                    prev.next = vert;
-                else
-                    polyHead[pathI] = vert;
-
-                prev = vert;
-
-            }
-            vert.next = polyHead[pathI];
-            polyHead[pathI].prev = vert;
-
-            vert = polyHead[pathI];
+            c.rad = rad * td.polyPaths[pathI].hardness;
 
             do
             {
+
                 Vector2 pos = vert.pos;
 
                 if (c.contains(pos))
                 {
-                    modified[pathI] = true;
                     contains++;
                 }
 
@@ -130,7 +118,6 @@ public class DeformTerrain : MonoBehaviour
                     {
                         if (0 < alpha1 && alpha1 < 1)
                         {
-                            modified[pathI] = true;
                             int1 = new LinkVert(pos1, path.Length + intersections.Count, vert, vert.next);
                             intersections.Add(int1);
                         }
@@ -138,7 +125,6 @@ public class DeformTerrain : MonoBehaviour
 
                         if (0 < alpha2 && alpha2 < 1)
                         {
-                            modified[pathI] = true;
                             int2 = new LinkVert(pos2, path.Length + intersections.Count, int1 != null ? int1 : vert, vert.next);
                             if(int1 != null)
                                 int1.next = int2;
@@ -148,10 +134,9 @@ public class DeformTerrain : MonoBehaviour
                     }
                 }
                 vert = vert.next;
-            } while (vert != polyHead[pathI]);
+            } while (vert != td.polyPaths[pathI].head);
 
-            if (contains == path.Length)
-                toRemove[pathI] = true;
+            Debug.Assert(LinkVert.validateVerts(td.polyPaths[pathI].head));
 
             if (intersections.Count > 0)
             {
@@ -196,12 +181,11 @@ public class DeformTerrain : MonoBehaviour
                 {
                     circleInt.next = interHead[pathI];
                     interHead[pathI].prev = circleInt;
+
+                    Debug.Assert( LinkVert.validateVerts(interHead[pathI]) );
                 }
 
-
-
-
-
+                Debug.Assert(LinkVert.validateVerts(td.polyPaths[pathI].head));
 
 
                 HashSet<LinkVert> entry = new HashSet<LinkVert>();
@@ -214,9 +198,20 @@ public class DeformTerrain : MonoBehaviour
                     //    Debug.DrawRay((Vector2)transform.position+inter.pos+Vector2.up*i*0.1f, transform.right*0.2f,Color.red,10);
                     //n++;
                 }
-                unvisited.UnionWith(entry);
+                unvisited.UnionWith(entry);  
 
-                int subdivCount = Mathf.RoundToInt(Math.Max(1, c.rad * 3.1f) );
+               
+
+                currComponent = 0;
+                Array.Resize(ref newVerts, 1);
+
+
+                LinkVert prevVert = null;
+
+                LinkVert newVert = null;
+                LinkVert prevNewVert = null;
+
+                
 
                 while (unvisited.Count > 0)
                 {
@@ -224,31 +219,36 @@ public class DeformTerrain : MonoBehaviour
                     if (currComponent >= newVerts.Length)
                         Array.Resize(ref newVerts, newVerts.Length + 1);
 
-                    newVerts[currComponent] = new List<Vector2>();
+                    
                     LinkVert intersect = unvisited.First();
+                    newVerts[currComponent] = intersect;
+
+                    //Debug.Log(intersect.index + " : " + intersect.pos);
 
                     unvisited.Remove(intersect);
 
-
-
-                    newVerts[currComponent].Add(intersect.pos);
+                    prevVert = intersect;
+                    
 
                     LinkVert v = intersect.next;
 
                     do
                     {
-
-                        newVerts[currComponent].Add(v.pos);
-
-                        //Debug.Log(v.index);
+                        
 
                         if (intersections.Contains(v) && !entry.Contains(v) )
                         {
 
                             LinkVert firstInt = v;
 
+                            prevNewVert = v;
+
                             v = v.counterpart.prev.counterpart;
                             unvisited.Remove(v);
+
+                            float dist = (firstInt.pos - v.pos).sqrMagnitude;
+
+                            int subdivCount = Mathf.RoundToInt(dist * 0.8f );
 
                             float startAng = Mathf.PI + Mathf.Atan2(firstInt.pos.y - c.pos.y, firstInt.pos.x - c.pos.x);
                             float endAng = Mathf.PI + Mathf.Atan2(v.pos.y - c.pos.y, v.pos.x - c.pos.x);
@@ -263,56 +263,57 @@ public class DeformTerrain : MonoBehaviour
 							{
                                 rotV.x = Mathf.Cos(phi);
                                 rotV.y = Mathf.Sin(phi);
-                                newVerts[currComponent].Add(c.pos - rotV * c.rad);
+
+                                newVert = new LinkVert(c.pos - rotV * c.rad, 0, prevNewVert);
+                                prevNewVert.next = newVert;
+
+                                prevNewVert = newVert;
+
                             }
 
-                        }
-                        else v = v.next;
+                            
+                            prevNewVert.next = v;
+                            v.prev = prevNewVert;
+
+                            //Debug.Assert(LinkVert.validateVerts(v));
+                        } else v = v.next;
+
+                        //Debug.Assert(LinkVert.validateVerts(v));
 
                     } while (v != intersect);
-
-
-
-
 
 
                     currComponent++;
                 }
 
+                foreach (LinkVert v in newVerts)
+                {
+                    Debug.Assert(LinkVert.validateVerts(v));
+                    if (LinkVert.Circumference(v) < 1.0f) continue;
+                    TerrainData.PolyPath pp = td.polyPaths[pathI];
+                    pp.head = v;
+                    pp.cleanCloseVerts();
+                    pp.recalc();
+                    newPaths.Add(pp);
+                }
+
+            } else if (contains != td.polyPaths[pathI].size) {
+                newPaths.Add(td.polyPaths[pathI]);
             }
+
+
+
 
         }
 
-  
+        c.rad = rad;
 
+        td.polyPaths = newPaths.ToArray();
+        td.polyPathCount = newPaths.Count;
 
-
-        for(int pathI = 0;pathI<pc.pathCount;pathI++)
-            if (toRemove[pathI])
-            {
-                for (int replaceI = pathI; replaceI < pc.pathCount - 1; replaceI++)
-                    pc.SetPath(replaceI, pc.GetPath(replaceI + 1));
-                pc.pathCount--;
-            }
-
-        int pathPos = 0;
-        int newPathN = 0;
-
-        while(newPathN < newVerts.Length )
-        {
-            if (pathPos >= pc.pathCount)
-                pc.pathCount++;
-
-            if (pathPos >= modified.Length || modified[pathPos] )
-            {
-                pc.SetPath(pathPos, newVerts[newPathN].ToArray());
-                newPathN++;
-
-            }
-            pathPos++;
-            
-        }
-
+        td.UpdateCollider();
     }
+
+
 
 }

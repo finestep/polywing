@@ -47,6 +47,8 @@ public class LinkVert
             a.next.prev = a.prev;
         }
 
+
+
         public static void SplitEdge(LinkVert a, LinkVert b, Vector2? pos = null)
         {
             if (pos == null) pos = (a.pos + b.pos) * 0.5f;
@@ -54,6 +56,76 @@ public class LinkVert
             InsertVert(a, b, v);
         }
 
+        public static int Length(LinkVert start)
+        {
+            LinkVert v = start;
+            LinkVert prev = v.prev;
+
+            int x = 0;
+
+            do
+            {
+                x += 1;
+
+                prev = v;
+
+                v = v.next;
+            } while (v != start);
+
+            return x;
+        }
+
+        public static float Circumference(LinkVert start)
+        {
+            LinkVert v = start;
+            LinkVert prev = v.prev;
+
+            float x = 0;
+
+            do
+            {
+                if (v == null || prev==null)
+                    Debug.Assert(false);
+                x += (v.pos - prev.pos).magnitude;
+               
+                prev = v;
+
+                v = v.next;
+            } while (v != start);
+
+            return x;
+        }
+
+        public static void printVerts(LinkVert vert)
+        {
+            int i = 0;
+            LinkVert v = vert;
+            do
+            {
+                Debug.Log("Vert " + v.index + " , pos:" + v.pos);
+                v = v.next;
+                i++;
+            } while (v != vert && i < 20);
+        }
+
+        public static bool validateVerts(LinkVert start)
+        {
+            int i = 0;
+            LinkVert v = start;
+            do
+            {
+                if (v.prev == null || v.next==null
+                    || v.prev.next != v || v.next.prev != v)
+                    return false;
+                v = v.next;
+                i++;
+            } while (v != start && i < 100);
+
+            if(i==100)
+                return false;
+
+            return true;
+        }
 
     }
 

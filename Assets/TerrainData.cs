@@ -54,24 +54,44 @@ public class TerrainData : MonoBehaviour {
 			size++;
 		}
 
-		public void recalc() {
+        public void cleanCloseVerts()
+        {
+            int len = LinkVert.Length(head);
+            LinkVert v = head.next;
+            LinkVert prev = head;
+            do
+            {
+                if ((v.pos - prev.pos).magnitude < 0.1f)
+                {
+                    if (v == head) head = v.prev;
+                    LinkVert.CollapseVert(v);
+                }
+                else prev = v;
+                len--;
+                v = v.next;
+            } while (v != head.next && len>3);
+        }
+
+        public void recalc(bool clear = true) {
 			LinkVert v = head;
+            if (clear) verts = new List<Vector2>();
 			int n = 0;
 			do {
+                if (v == null) Debug.Assert(false);
 				verts.Add( v.pos );
 				v = v.next;
 				n++;
 			} while( v != head);
-			verts.RemoveRange (n, verts.Count - n);
 			size = n;
 		}
+
 	}
 
 	public PolyPath[] polyPaths;
 	public int polyPathCount;
 
 	public int[] initialMats;
-	public int[] initialHard;
+	public float[] initialHard;
 
 	public bool fromColliderOnStart;
 
@@ -109,6 +129,16 @@ public class TerrainData : MonoBehaviour {
 			polyPathCount = 0;
 		}
 	}
+
+    public void UpdateCollider()
+    {
+        PolygonCollider2D pc = GetComponent<PolygonCollider2D>();
+        pc.pathCount = polyPathCount;
+        for(int i = 0; i<polyPathCount; ++i)
+        {
+            pc.SetPath(i, polyPaths[i].verts.ToArray());
+        }
+    }
 	
 	// Update is called once per frame
 	void LateUpdate () {

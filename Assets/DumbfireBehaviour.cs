@@ -20,6 +20,7 @@ public class DumbfireBehaviour : MonoBehaviour {
     {
         GameObject e = (GameObject)Instantiate(explo, transform.position, Quaternion.identity);
         e.GetComponent<BasicExplosionBehaviour>().radius = 0.5f;
+        Destroy(e, 3);
         Destroy(gameObject);
     }
 }
