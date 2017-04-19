@@ -5,6 +5,8 @@ public class ShipControls : MonoBehaviour {
 
     Rigidbody2D rb;
 
+    public int id;
+
     public float thrust;
     public float turnSpeed;
     public float maxSpeed;
@@ -23,15 +25,15 @@ public class ShipControls : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (Input.GetAxis("Vertical") > 0) thrusting = true;
+        if (Input.GetAxis("Thrust_"+id) > 0) thrusting = true;
         else thrusting = false;
-        if (Input.GetAxis("Horizontal") > 0) turn = -1;
-        else if (Input.GetAxis("Horizontal") < 0) turn = 1;
+        if (Input.GetAxis("Turning_" + id) > 0) turn = -1;
+        else if (Input.GetAxis("Turning_" + id) < 0) turn = 1;
         else turn = 0;
 
         weapons[0].GetComponent<Weapon>().energy += Time.deltaTime*10;
 
-        if (Input.GetAxis("Fire1")>0)
+        if (Input.GetAxis("Fire_" + id) >0)
         {
             weapons[0].GetComponent<Weapon>().Fire();
         }
