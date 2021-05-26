@@ -18,7 +18,7 @@
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.5.1f1</UnityVersion>
     <RootNamespace></RootNamespace>
-    <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
+    <LangVersion>4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -75,26 +75,31 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\AngleTest.cs" />
-    <Compile Include="Assets\BasicExplosionBehaviour.cs" />
-    <Compile Include="Assets\BasicGizmo.cs" />
-    <Compile Include="Assets\BasicProjectile.cs" />
-    <Compile Include="Assets\CircleTest.cs" />
-    <Compile Include="Assets\DeformTerrain.cs" />
-    <Compile Include="Assets\DumbfireBehaviour.cs" />
-    <Compile Include="Assets\ExplodeOnMouse.cs" />
-    <Compile Include="Assets\LinkVert.cs" />
-    <Compile Include="Assets\ShipAirdrag.cs" />
-    <Compile Include="Assets\ShipCollide.cs" />
-    <Compile Include="Assets\ShipControls.cs" />
-    <Compile Include="Assets\ShipHealth.cs" />
-    <Compile Include="Assets\StayInBounds.cs" />
-    <Compile Include="Assets\TerrainData.cs" />
-    <Compile Include="Assets\TerrainIntoMesh.cs" />
-    <Compile Include="Assets\Weapon.cs" />
+    <Compile Include="Assets\DontRotateWithParent.cs" />
+    <Compile Include="Assets\Gamestate.cs" />
+    <Compile Include="Assets\HealthbarBehaviour.cs" />
+    <Compile Include="Assets\KeepShipsOnCamera.cs" />
+    <Compile Include="Assets\Killbind.cs" />
+    <Compile Include="Assets\Recollide.cs" />
+    <Compile Include="Assets\Ship\PolyshipMesh.cs" />
+    <Compile Include="Assets\Ship\ShipAirdrag.cs" />
+    <Compile Include="Assets\Ship\ShipCollide.cs" />
+    <Compile Include="Assets\Ship\ShipControls.cs" />
+    <Compile Include="Assets\Ship\ShipHealth.cs" />
+    <Compile Include="Assets\ShockwaveBehaviour.cs" />
+    <Compile Include="Assets\Terrain\DeformTerrain.cs" />
+    <Compile Include="Assets\Terrain\LinkVert.cs" />
+    <Compile Include="Assets\Terrain\TerrainData.cs" />
+    <Compile Include="Assets\Terrain\TerrainIntoMesh.cs" />
+    <Compile Include="Assets\Weapons\BasicExplosionBehaviour.cs" />
+    <Compile Include="Assets\Weapons\BasicProjectileWeapon.cs" />
+    <Compile Include="Assets\Weapons\DumbfireBehaviour.cs" />
+    <Compile Include="Assets\Weapons\ShrapnelBehaviour.cs" />
+    <Compile Include="Assets\Weapons\Weapon.cs" />
+    <Compile Include="Assets\Weapons\WeaponChaingunBehaviour.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\TerrainWorldSpace.shader" />
+    <None Include="Assets\Terrain\TerrainWorldSpace.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
